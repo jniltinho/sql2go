@@ -1,0 +1,29 @@
+# Binários compilados
+/sql2go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Diretório padrão de saída do gerador (geralmente gerado apenas para testes locais)
+/models/
+
+# Pastas de ambiente de desenvolvimento
+.idea/
+.vscode/
+
+# Dependências (se você faz vendor)
+vendor/
+bin/
+
+# OS-specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
