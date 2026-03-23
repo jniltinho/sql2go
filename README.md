@@ -109,14 +109,18 @@ CLI flags always take precedence over environment variables. The priority order 
 
 ## CLI Flags
 
-- `--env`: Path to `.env` file, default `.env` (silently ignored if not found)
-- `--db`: Database name (env: `SQL2GO_DB`)
-- `--host`: MySQL host, default `127.0.0.1` (env: `SQL2GO_HOST`)
-- `--port`: MySQL port, default `3306` (env: `SQL2GO_PORT`)
-- `--user`: MySQL user, default `root` (env: `SQL2GO_USER`)
-- `--pass`: MySQL password, default empty (env: `SQL2GO_PASS`)
-- `--out`: Output directory for generated models, default `./models` (env: `SQL2GO_OUT`)
-- `--merge`: Merge generated models into a single file, default `false` (env: `SQL2GO_MERGE`)
+```
+Flags:
+      --env string    Path to .env file (loaded automatically if it exists) (default ".env")
+      --host string   MySQL host (env: SQL2GO_HOST) (default "127.0.0.1")
+      --port int      MySQL port (env: SQL2GO_PORT) (default 3306)
+      --user string   MySQL user (env: SQL2GO_USER) (default "root")
+      --pass string   MySQL password (env: SQL2GO_PASS)
+      --db string     Database name (env: SQL2GO_DB)
+      --out string    Output directory (env: SQL2GO_OUT) (default "./models")
+      --merge         Merge generated models into a single file (env: SQL2GO_MERGE)
+  -h, --help          help for generate
+```
 
 ## Commands
 

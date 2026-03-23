@@ -55,43 +55,17 @@ var generateCmd = &cobra.Command{
 		}
 
 		// Apply env vars for flags not explicitly set by the user
-		if !cmd.Flags().Changed("host") {
-			if v := os.Getenv("SQL2GO_HOST"); v != "" {
-				cfg.host = v
+		applyEnv(cmd, "host", "SQL2GO_HOST", func(v string) { cfg.host = v })
+		applyEnv(cmd, "port", "SQL2GO_PORT", func(v string) {
+			if p, err := strconv.Atoi(v); err == nil {
+				cfg.port = p
 			}
-		}
-		if !cmd.Flags().Changed("port") {
-			if v := os.Getenv("SQL2GO_PORT"); v != "" {
-				if p, err := strconv.Atoi(v); err == nil {
-					cfg.port = p
-				}
-			}
-		}
-		if !cmd.Flags().Changed("user") {
-			if v := os.Getenv("SQL2GO_USER"); v != "" {
-				cfg.user = v
-			}
-		}
-		if !cmd.Flags().Changed("pass") {
-			if v := os.Getenv("SQL2GO_PASS"); v != "" {
-				cfg.pass = v
-			}
-		}
-		if !cmd.Flags().Changed("db") {
-			if v := os.Getenv("SQL2GO_DB"); v != "" {
-				cfg.dbName = v
-			}
-		}
-		if !cmd.Flags().Changed("out") {
-			if v := os.Getenv("SQL2GO_OUT"); v != "" {
-				cfg.out = v
-			}
-		}
-		if !cmd.Flags().Changed("merge") {
-			if v := os.Getenv("SQL2GO_MERGE"); v != "" {
-				cfg.merge = v == "true" || v == "1"
-			}
-		}
+		})
+		applyEnv(cmd, "user", "SQL2GO_USER", func(v string) { cfg.user = v })
+		applyEnv(cmd, "pass", "SQL2GO_PASS", func(v string) { cfg.pass = v })
+		applyEnv(cmd, "db", "SQL2GO_DB", func(v string) { cfg.dbName = v })
+		applyEnv(cmd, "out", "SQL2GO_OUT", func(v string) { cfg.out = v })
+		applyEnv(cmd, "merge", "SQL2GO_MERGE", func(v string) { cfg.merge = v == "true" || v == "1" })
 
 		if cfg.dbName == "" {
 			return fmt.Errorf("required flag \"db\" not set and SQL2GO_DB env var is empty")
@@ -129,6 +103,14 @@ func init() {
 
 func Execute() error {
 	return rootCmd.Execute()
+}
+
+func applyEnv(cmd *cobra.Command, flag, envVar string, set func(string)) {
+	if !cmd.Flags().Changed(flag) {
+		if v := os.Getenv(envVar); v != "" {
+			set(v)
+		}
+	}
 }
 
 func runGenerator(cfg config) error {
