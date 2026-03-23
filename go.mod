@@ -3,6 +3,7 @@ module sql2go
 go 1.26
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.10.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gen v0.3.27

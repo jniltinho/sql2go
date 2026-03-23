@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
@@ -29,6 +31,7 @@ type config struct {
 }
 
 var cfg = config{}
+var envFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "sql2go",
@@ -44,6 +47,56 @@ var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go models from a MySQL database",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Load .env file (ignore error if file not found, unless explicitly specified)
+		if envFile != "" {
+			if err := godotenv.Load(envFile); err != nil && cmd.Flags().Changed("env") {
+				return fmt.Errorf("failed to load env file %q: %w", envFile, err)
+			}
+		}
+
+		// Apply env vars for flags not explicitly set by the user
+		if !cmd.Flags().Changed("host") {
+			if v := os.Getenv("SQL2GO_HOST"); v != "" {
+				cfg.host = v
+			}
+		}
+		if !cmd.Flags().Changed("port") {
+			if v := os.Getenv("SQL2GO_PORT"); v != "" {
+				if p, err := strconv.Atoi(v); err == nil {
+					cfg.port = p
+				}
+			}
+		}
+		if !cmd.Flags().Changed("user") {
+			if v := os.Getenv("SQL2GO_USER"); v != "" {
+				cfg.user = v
+			}
+		}
+		if !cmd.Flags().Changed("pass") {
+			if v := os.Getenv("SQL2GO_PASS"); v != "" {
+				cfg.pass = v
+			}
+		}
+		if !cmd.Flags().Changed("db") {
+			if v := os.Getenv("SQL2GO_DB"); v != "" {
+				cfg.dbName = v
+			}
+		}
+		if !cmd.Flags().Changed("out") {
+			if v := os.Getenv("SQL2GO_OUT"); v != "" {
+				cfg.out = v
+			}
+		}
+		if !cmd.Flags().Changed("merge") {
+			if v := os.Getenv("SQL2GO_MERGE"); v != "" {
+				cfg.merge = v == "true" || v == "1"
+			}
+		}
+
+		if cfg.dbName == "" {
+			return fmt.Errorf("required flag \"db\" not set and SQL2GO_DB env var is empty")
+		}
+
 		return runGenerator(cfg)
 	},
 }
@@ -59,15 +112,15 @@ var versionCmd = &cobra.Command{
 
 func init() {
 	generateCmd.Flags().SortFlags = false
-	generateCmd.Flags().StringVar(&cfg.host, "host", "127.0.0.1", "MySQL host")
-	generateCmd.Flags().IntVar(&cfg.port, "port", 3306, "MySQL port")
-	generateCmd.Flags().StringVar(&cfg.user, "user", "root", "MySQL user")
-	generateCmd.Flags().StringVar(&cfg.pass, "pass", "", "MySQL password")
-	generateCmd.Flags().StringVar(&cfg.dbName, "db", "", "Database name")
-	generateCmd.Flags().StringVar(&cfg.out, "out", "./models", "Output directory")
-	generateCmd.Flags().BoolVar(&cfg.merge, "merge", false, "Merge generated models into a single file")
+	generateCmd.Flags().StringVar(&envFile, "env", ".env", "Path to .env file (loaded automatically if it exists)")
+	generateCmd.Flags().StringVar(&cfg.host, "host", "127.0.0.1", "MySQL host (env: SQL2GO_HOST)")
+	generateCmd.Flags().IntVar(&cfg.port, "port", 3306, "MySQL port (env: SQL2GO_PORT)")
+	generateCmd.Flags().StringVar(&cfg.user, "user", "root", "MySQL user (env: SQL2GO_USER)")
+	generateCmd.Flags().StringVar(&cfg.pass, "pass", "", "MySQL password (env: SQL2GO_PASS)")
+	generateCmd.Flags().StringVar(&cfg.dbName, "db", "", "Database name (env: SQL2GO_DB)")
+	generateCmd.Flags().StringVar(&cfg.out, "out", "./models", "Output directory (env: SQL2GO_OUT)")
+	generateCmd.Flags().BoolVar(&cfg.merge, "merge", false, "Merge generated models into a single file (env: SQL2GO_MERGE)")
 
-	_ = generateCmd.MarkFlagRequired("db")
 	rootCmd.AddCommand(generateCmd, versionCmd)
 
 	// Keep the standard library flag package from interfering with Cobra when imported by dependencies.

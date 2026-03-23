@@ -72,24 +72,51 @@ make run DB_NAME=my_database USER=root PASS=my_password OUT_DIR=./models MERGE=t
 ### Run the binary directly
 
 ```bash
-./bin/sql2go generate -db my_database -host 127.0.0.1 -port 3306 -user root -pass "my_password" -out ./models
+./bin/sql2go generate --db my_database --host 127.0.0.1 --port 3306 --user root --pass "my_password" --out ./models
 ```
 
 Enable file merge explicitly:
 
 ```bash
-./bin/sql2go generate -db my_database -host 127.0.0.1 -port 3306 -user root -pass "my_password" -out ./models -merge
+./bin/sql2go generate --db my_database --host 127.0.0.1 --port 3306 --user root --pass "my_password" --out ./models --merge
 ```
+
+### Using a .env file
+
+`sql2go` automatically loads a `.env` file from the current directory if it exists. You can also point to a custom file with `--env`:
+
+```bash
+./bin/sql2go generate --env /path/to/.env
+```
+
+Example `.env`:
+
+```env
+SQL2GO_HOST=127.0.0.1
+SQL2GO_PORT=3306
+SQL2GO_USER=root
+SQL2GO_PASS=secret
+SQL2GO_DB=mydb
+SQL2GO_OUT=./models
+SQL2GO_MERGE=true
+```
+
+CLI flags always take precedence over environment variables. The priority order is:
+
+1. CLI flags (highest)
+2. Environment variables (from `.env` or shell)
+3. Default values (lowest)
 
 ## CLI Flags
 
-- `-db`: Database name, required
-- `-host`: MySQL host, default `127.0.0.1`
-- `-port`: MySQL port, default `3306`
-- `-user`: MySQL user, default `root`
-- `-pass`: MySQL password, default empty
-- `-out`: Output directory for generated models, default `./models`
-- `-merge`: Merge generated models into a single file, default `false`
+- `--env`: Path to `.env` file, default `.env` (silently ignored if not found)
+- `--db`: Database name (env: `SQL2GO_DB`)
+- `--host`: MySQL host, default `127.0.0.1` (env: `SQL2GO_HOST`)
+- `--port`: MySQL port, default `3306` (env: `SQL2GO_PORT`)
+- `--user`: MySQL user, default `root` (env: `SQL2GO_USER`)
+- `--pass`: MySQL password, default empty (env: `SQL2GO_PASS`)
+- `--out`: Output directory for generated models, default `./models` (env: `SQL2GO_OUT`)
+- `--merge`: Merge generated models into a single file, default `false` (env: `SQL2GO_MERGE`)
 
 ## Commands
 
@@ -117,6 +144,7 @@ make run DB_NAME=my_database USER=root PASS=my_password OUT_DIR=./models
 make run DB_NAME=my_database USER=root PASS=my_password OUT_DIR=./models MERGE=true
 ./bin/sql2go --help
 ./bin/sql2go version
-./bin/sql2go generate -db my_database
-./bin/sql2go generate -db my_database -out ./models -merge
+./bin/sql2go generate --db my_database
+./bin/sql2go generate --db my_database --out ./models --merge
+./bin/sql2go generate --env .env.production
 ```
